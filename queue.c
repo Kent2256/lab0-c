@@ -58,17 +58,7 @@ bool q_insert_tail(struct list_head *head, char *s)
     if (!head || !s) {
         return false;
     }
-    element_t *element = malloc(sizeof(element_t));
-    if (!element) {
-        return false;
-    }
-    element->value = strdup(s);
-    if (!element->value) {
-        q_release_element(element);
-        return false;
-    }
-    list_add_tail(&element->list, head);
-    return true;
+    return q_insert_head(head->prev, s);
 }
 
 /* Remove an element from head of queue */
@@ -80,12 +70,11 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
     struct list_head *node = head->next;
     element_t *element = list_first_entry(head, element_t, list);
     size_t len = strlen(element->value);
-    // 確保不會超過緩衝區大小
     if (len >= bufsize) {
         len = bufsize - 1;
     }
     strncpy(sp, element->value, len);
-    sp[len] = '\0';  // 確保字符串以空字符結尾
+    sp[len] = '\0';
     list_del(node);
     return element;
 }
@@ -96,11 +85,7 @@ element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
     if (list_empty(head)) {
         return NULL;
     }
-    struct list_head *node = head->prev;
-    element_t *element = list_last_entry(head, element_t, list);
-    strncpy(sp, element->value, bufsize);
-    list_del(node);
-    return element;
+    return q_remove_head(head->prev->prev, sp, bufsize);
 }
 
 /* Return number of elements in queue */
